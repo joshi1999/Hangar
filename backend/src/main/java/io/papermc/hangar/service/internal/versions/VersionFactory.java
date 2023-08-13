@@ -296,7 +296,9 @@ public class VersionFactory extends HangarComponent {
             this.downloadsDAO.insertPlatformDownloads(platformDownloadsTables);
 
             // send notifications
-            this.notificationService.notifyUsersNewVersion(projectTable, projectVersionTable, this.projectService.getProjectWatchers(projectTable.getId()));
+            if (projectChannelTable.getFlags().contains(ChannelFlag.SENDS_NOTIFICATIONS)) {
+                this.notificationService.notifyUsersNewVersion(projectTable, projectVersionTable, this.projectService.getProjectWatchers(projectTable.getId()));
+            }
             this.actionLogger.version(LogAction.VERSION_CREATED.create(VersionContext.of(projectId, projectVersionTable.getId()), "published", ""));
 
             if (projectTable.getVisibility() == Visibility.NEW) {
@@ -385,7 +387,7 @@ public class VersionFactory extends HangarComponent {
         final String tmpVersionJar = this.fileService.resolve(this.fileService.resolve(userTempDir, platformToResolve.name()), fileInfo.getName());
 
         final String newVersionJarPath = this.fileService.resolve(this.fileService.resolve(versionDir, platformToResolve.name()), fileInfo.getName());
-        this.fileService.move(tmpVersionJar, newVersionJarPath);
+        this.fileService.moveFile(tmpVersionJar, newVersionJarPath);
 
         // Create links for the other platforms
         for (int i = 1; i < pendingVersionFile.platforms().size(); i++) {
